@@ -1,50 +1,84 @@
 import { connectToDatabase } from "@/lib/db";
 import { TaskModel } from "@/models/Task";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { getToken } from "next-auth/jwt";
 
-//inserting a new task in the database  
-export async function POST(req: Request) {
-    await connectToDatabase();
+// Inserting a new task in the database
+export async function POST(req: NextRequest) {
+
+  //getting the token directly from the header
+  const token = req.headers.get("Authorization")?.split(" ")[1];
+
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    //veryfing the jwt token
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
+    const userId = decodedToken.userId;
+
+    if (!userId) {
+      return NextResponse.json({ error: "Invalid token, no user ID" }, { status: 401 });
+    }
+
     const { title, description } = await req.json();
-  
-    //if the user doesn't provide both the tiitle and the description, it'll throw an erorr.
+
     if (!title || !description) {
       return NextResponse.json(
         { error: "These fields are required!" },
         { status: 400 }
       );
     }
-  
-    const newTask = await TaskModel.create({ title, description });
+
+    //creating a new task with the user Id associated
+    const newTask = await TaskModel.create({
+      title,
+      description,
+      userId: userId // vinculating the task to the user
+    });    
+
     return NextResponse.json(newTask, { status: 201 });
+  } catch (error) {
+    console.error("Error verifying token:", error);
+    return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+  }
+}
+
+
+// Getting all tasks (with optional filters)
+export async function GET(req: NextRequest) {
+  await connectToDatabase();
+
+  const token = req.headers.get("Authorization")?.split(" ")[1];
+
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  try {
+    // Verifying the JWT token
+    const decodedToken = jwt.verify(token as string, process.env.JWT_SECRET as string) as JwtPayload;
+    
+    const filter: any = { userId: decodedToken.userId }; // Filtering by the user's id
+    console.log("Filter:", filter);
 
-//here im checking if there is any search params whatsoever, if not, it'll return all the tasks
-export async function GET(req: Request) {
-    await connectToDatabase();
-  
-    //extracts the search params URL
     const { searchParams } = new URL(req.url);
     const title = searchParams.get("title");
     const completedParam = searchParams.get("completed");
-  
-    //if there is no param, it'll return all of 'em
-    if (!title && completedParam === null) {
-      const tasks = await TaskModel.find();
-      return NextResponse.json(tasks);
-    }
 
-    //otherwise it'll build the filter search
-    const filter: any = {};
     if (title) {
       filter.title = { $regex: title, $options: "i" };
     }
     if (completedParam !== null) {
       filter.completed = completedParam === "true";
     }
-  
+
     const tasks = await TaskModel.find(filter);
     return NextResponse.json(tasks);
+  } catch (error) {
+    console.error("Error verifying token:", error);
+    return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
   }
-
+}
