@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
     const newTask = await TaskModel.create({
       title,
       description,
+      completed:false,
       userId: userId // vinculating the task to the user
     });    
 
@@ -72,8 +73,10 @@ export async function GET(req: NextRequest) {
       filter.title = { $regex: title, $options: "i" };
     }
     if (completedParam !== null) {
-      filter.completed = completedParam === "true";
+      if (completedParam === "true") filter.completed = true;
+      else if (completedParam === "false") filter.completed = false;
     }
+    
 
     const tasks = await TaskModel.find(filter);
     return NextResponse.json(tasks);
