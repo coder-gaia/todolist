@@ -32,7 +32,7 @@ function isErrorResponse(decodedToken: JwtPayload | NextResponse): decodedToken 
 }
 
 // GET a task by its id
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: any } ) {
   try {
     const decodedToken = await verifyToken(req); // Verifying the token
 
@@ -72,7 +72,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
 
 // DELETE a task
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: any }) {
   try {
     const decodedToken = await verifyToken(req); // Verifying the token
 
@@ -105,7 +105,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 }
 
 // PUT (update a task)
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: any }) {
   try {
     const decodedToken = await verifyToken(req); // Verifying the token
 

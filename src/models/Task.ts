@@ -1,4 +1,4 @@
-import { model, models, Schema, Document, ObjectId, Types } from "mongoose";
+import { model, models, Schema, Document, Types } from "mongoose";
 
 // defining the task model
 export interface ITask extends Document {

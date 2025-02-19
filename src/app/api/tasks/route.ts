@@ -2,7 +2,7 @@ import { connectToDatabase } from "@/lib/db";
 import { TaskModel } from "@/models/Task";
 import { NextRequest, NextResponse } from "next/server";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { getToken } from "next-auth/jwt";
+
 
 // Inserting a new task in the database
 export async function POST(req: NextRequest) {
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
 
 
 // Getting all tasks (with optional filters)
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest, { params }: { params: any }) {
   await connectToDatabase();
 
   const token = req.headers.get("Authorization")?.split(" ")[1];
