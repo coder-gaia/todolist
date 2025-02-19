@@ -10,6 +10,8 @@ This is an API for the project: (https://todolist-client.vercel.app)
    - Next;
    - TypeScript;
    - Mongoose;
+   - Express for routes;
+   - JWT for auth security;
    - Bcrypt for password hash;
    - Next-Auth for user authentication.
 
